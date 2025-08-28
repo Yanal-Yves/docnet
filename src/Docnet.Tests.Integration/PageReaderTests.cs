@@ -235,7 +235,7 @@ namespace Docnet.Tests.Integration
                 var bytes = pageReader.GetImage().ToArray();
 
                 Assert.True(bytes.Length > 0);
-                Assert.NotEmpty(bytes.Where(x => x != 0));
+                Assert.Contains(bytes,x => x != 0);
             });
         }
 
@@ -253,14 +253,14 @@ namespace Docnet.Tests.Integration
                 var bytes = pageReader.GetImage(new NaiveTransparencyRemover()).ToArray();
 
                 Assert.True(bytes.Length > 0);
-                Assert.NotEmpty(bytes.Where(x => x != 0));
+                Assert.Contains(bytes, x => x != 0);
             });
         }
 
         [Theory]
         [InlineData(Input.FromFile)]
         [InlineData(Input.FromBytes)]
-        public void Reader_WhenCalledFromDifferentThreads_ShouldBeAbleToHandle(Input type)
+        public async Task Reader_WhenCalledFromDifferentThreads_ShouldBeAbleToHandle(Input type)
         {
             var task1 = Task.Run(() => Assert.InRange(GetNonZeroByteCount(type, "Docs/simple_0.pdf", _fixture), 2000000, 2400000));
             var task2 = Task.Run(() => Assert.InRange(GetNonZeroByteCount(type, "Docs/simple_1.pdf", _fixture), 190000, 200000));
@@ -268,7 +268,7 @@ namespace Docnet.Tests.Integration
             var task4 = Task.Run(() => Assert.InRange(GetNonZeroByteCount(type, "Docs/simple_3.pdf", _fixture), 20000, 22000));
             var task5 = Task.Run(() => Assert.InRange(GetNonZeroByteCount(type, "Docs/simple_4.pdf", _fixture), 0, 0));
 
-            Task.WaitAll(task1, task2, task3, task4, task5);
+            await Task.WhenAll(task1, task2, task3, task4, task5);
         }
 
         [Theory]
@@ -366,7 +366,7 @@ namespace Docnet.Tests.Integration
                 pageReader.WriteImageToBuffer(0, bytes);
 
                 Assert.True(bytes.Length > 0);
-                Assert.NotEmpty(bytes.Where(x => x != 0));
+                Assert.Contains(bytes, x => x != 0);
             });
         }
 
@@ -410,7 +410,7 @@ namespace Docnet.Tests.Integration
                 pageReader.WriteImageToBuffer(0, bytes);
 
                 Assert.True(bytes.Length > 0);
-                Assert.NotEmpty(bytes.Where(x => x != 0));
+                Assert.Contains(bytes, x => x != 0);
                 arrayPool.Return(bytes);
             });
         }
@@ -422,7 +422,7 @@ namespace Docnet.Tests.Integration
         [InlineData(RenderFlags.RenderAnnotations, "Docs/annotation_1.pdf", null, 0, 3)]
         [InlineData(RenderFlags.RenderAnnotations, "Docs/annotation_1.pdf", null, 0, 4)]
         [InlineData(RenderFlags.RenderAnnotations, "Docs/annotation_1.pdf", null, 0, 5)]
-        public void Parallel_GetImage_WhenCalledWithFlags_ShouldWork(RenderFlags flags, string filePath, string password, int pageIndex, int run)
+        public void Parallel_GetImage_WhenCalledWithFlags_ShouldWork(RenderFlags flags, string filePath, string password, int pageIndex, int _)
         {
             var numbers = Enumerable.Range(1, 1000);
 
