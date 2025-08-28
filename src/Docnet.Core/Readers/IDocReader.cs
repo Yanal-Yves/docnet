@@ -1,27 +1,33 @@
-using System;
 using Docnet.Core.Models;
+using System;
 
 namespace Docnet.Core.Readers
 {
-    public interface IDocReader : IDisposable
-    {
-        /// <summary>
-        /// PDF document version e.g. 1.7.
-        /// </summary>
-        /// <returns>Version.</returns>
-        PdfVersion GetPdfVersion();
+  public interface IDocReader : IDisposable
+  {
+    /// <summary>
+    /// Reads Attachment count.
+    /// </summary>
+    /// <returns>Attachment count.</returns>
+    int GetAttachmentCount();
 
-        /// <summary>
-        /// Reads page count.
-        /// </summary>
-        /// <returns>Page count.</returns>
-        int GetPageCount();
+    /// <summary>
+    /// PDF document version e.g. 1.7.
+    /// </summary>
+    /// <returns>Version.</returns>
+    PdfVersion GetPdfVersion();
 
-        /// <summary>
-        /// Get page reader.
-        /// </summary>
-        /// <param name="pageIndex">Page index.</param>
-        /// <returns>Page reader.</returns>
-        IPageReader GetPageReader(int pageIndex);
-    }
+    /// <summary>
+    /// Reads page count.
+    /// </summary>
+    /// <returns>Page count.</returns>
+    int GetPageCount();
+
+    /// <summary>
+    /// Get page reader.
+    /// </summary>
+    /// <param name="pageIndex">Page index.</param>
+    /// <returns>Page reader.</returns>
+    IPageReader GetPageReader(int pageIndex);
+  }
 }

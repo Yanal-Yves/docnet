@@ -1874,6 +1874,10 @@ namespace Docnet.Core.Bindings
 
             [SuppressUnmanagedCodeSecurity]
             [DllImport("pdfium", CallingConvention = CallingConvention.Cdecl,
+                EntryPoint = "FPDFDoc_GetAttachmentCount")]
+            internal static extern int FPDFDoc_GetAttachmentCount(IntPtr document);
+
+            [DllImport("pdfium", CallingConvention = CallingConvention.Cdecl,
                 EntryPoint = "FPDF_GetPageCount")]
             internal static extern int FPDF_GetPageCount(IntPtr document);
 
@@ -2179,12 +2183,19 @@ namespace Docnet.Core.Bindings
             return __ret;
         }
 
+        public static int FPDFDoc_GetAttachmentCount(FpdfDocumentT document)
+            {
+              var __arg0 = ReferenceEquals(document, null) ? IntPtr.Zero : document.__Instance;
+              var __ret = __Internal.FPDFDoc_GetAttachmentCount(__arg0);
+              return __ret;
+            }
+
         public static int FPDF_GetPageCount(FpdfDocumentT document)
-        {
-            var __arg0 = ReferenceEquals(document, null) ? IntPtr.Zero : document.__Instance;
-            var __ret = __Internal.FPDF_GetPageCount(__arg0);
-            return __ret;
-        }
+            {
+                var __arg0 = ReferenceEquals(document, null) ? IntPtr.Zero : document.__Instance;
+                var __ret = __Internal.FPDF_GetPageCount(__arg0);
+                return __ret;
+            }
 
         public static FpdfPageT FPDF_LoadPage(
             FpdfDocumentT document, int page_index)
@@ -2952,6 +2963,11 @@ namespace Docnet.Core.Bindings
         {
             [SuppressUnmanagedCodeSecurity]
             [DllImport("pdfium", CallingConvention = CallingConvention.Cdecl,
+               EntryPoint = "FPDFDoc_DeleteAttachment")]
+            public static extern bool FPDFDoc_DeleteAttachment(IntPtr document, int index);
+
+            [SuppressUnmanagedCodeSecurity]
+            [DllImport("pdfium", CallingConvention = CallingConvention.Cdecl,
                 EntryPoint = "FPDF_ImportPages")]
             internal static extern int FPDF_ImportPages(IntPtr dest_doc, IntPtr src_doc,
                 [MarshalAs(UnmanagedType.LPStr)] string pagerange, int index);
@@ -2967,6 +2983,13 @@ namespace Docnet.Core.Bindings
                 EntryPoint = "FPDF_CopyViewerPreferences")]
             internal static extern int FPDF_CopyViewerPreferences(IntPtr dest_doc,
                 IntPtr src_doc);
+        }
+
+        public static bool FPDFDoc_DeleteAttachment(FpdfDocumentT document, int index)
+        {
+          var __arg0 = ReferenceEquals(document, null) ? IntPtr.Zero : document.__Instance;
+          var __ret = __Internal.FPDFDoc_DeleteAttachment(__arg0, index);
+          return __ret;
         }
 
         public static int FPDF_ImportPages(FpdfDocumentT dest_doc,
