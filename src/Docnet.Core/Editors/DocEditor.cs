@@ -15,7 +15,8 @@ namespace Docnet.Core.Editors
                 using (var docOneWrapper = new DocumentWrapper(fileOne, null))
                 using (var docTwoWrapper = new DocumentWrapper(fileTwo, null))
                 {
-                    return Merge(docOneWrapper, docTwoWrapper);
+                    DocumentWrapper[] docWrappers = { docOneWrapper, docTwoWrapper };
+                    return Merge(docWrappers);
                 }
             }
         }
@@ -27,16 +28,17 @@ namespace Docnet.Core.Editors
                 using (var docOneWrapper = new DocumentWrapper(fileOne, null))
                 using (var docTwoWrapper = new DocumentWrapper(fileTwo, null))
                 {
-                    return Merge(docOneWrapper, docTwoWrapper);
+                    DocumentWrapper[] docWrappers = { docOneWrapper, docTwoWrapper };
+                    return Merge(docWrappers);
                 }
             }
         }
 
         public byte[] Merge(IReadOnlyList<byte[]> files)
         {
-            using (var newWrapper = new DocumentWrapper(fpdf_edit.FPDF_CreateNewDocument()))
+            lock (DocLib.Lock)
             {
-                lock (DocLib.Lock)
+                using (var newWrapper = new DocumentWrapper(fpdf_edit.FPDF_CreateNewDocument()))
                 {
                     var documentWrappers = OpenDocuments(files);
                     documentWrappers = documentWrappers.Prepend(newWrapper).ToArray();
@@ -85,8 +87,7 @@ namespace Docnet.Core.Editors
                 documentWrapper.Dispose();
             }
 
-            throw new DocnetLoadDocumentsException("unable to open one or more documents",
-                documentLoadExceptions.ToArray());
+            throw new DocnetLoadDocumentsException("unable to open one or more documents", documentLoadExceptions.ToArray());
         }
 
         private static byte[] Merge(IList<DocumentWrapper> docWrappers)
@@ -102,37 +103,16 @@ namespace Docnet.Core.Editors
                         var pageCountOne = fpdf_view.FPDF_GetPageCount(docOneWrapper.Instance);
 
                         var success = fpdf_ppo.FPDF_ImportPages(
-                            docOneWrapper.Instance,
-                            documentWrapper.Instance,
-                            null,
-                            pageCountOne) == 1;
+                                          docOneWrapper.Instance,
+                                          documentWrapper.Instance,
+                                          null,
+                                          pageCountOne) == 1;
 
                         if (!success)
                         {
                             throw new DocnetException("failed to merge files");
                         }
                     }
-                }
-
-                return GetBytes(stream, docOneWrapper);
-            }
-        }
-
-        private static byte[] Merge(DocumentWrapper docOneWrapper, DocumentWrapper docTwoWrapper)
-        {
-            using (var stream = new MemoryStream())
-            {
-                var pageCountOne = fpdf_view.FPDF_GetPageCount(docOneWrapper.Instance);
-
-                var success = fpdf_ppo.FPDF_ImportPages(
-                    docOneWrapper.Instance,
-                    docTwoWrapper.Instance,
-                    null,
-                    pageCountOne) == 1;
-
-                if (!success)
-                {
-                    throw new DocnetException("failed to merge files");
                 }
 
                 return GetBytes(stream, docOneWrapper);
@@ -194,10 +174,10 @@ namespace Docnet.Core.Editors
             using (var stream = new MemoryStream())
             {
                 var success = fpdf_ppo.FPDF_ImportPages(
-                    newWrapper.Instance,
-                    srcWrapper.Instance,
-                    pageRange,
-                    0) == 1;
+                                  newWrapper.Instance,
+                                  srcWrapper.Instance,
+                                  pageRange,
+                                  0) == 1;
 
                 if (!success)
                 {
@@ -246,8 +226,7 @@ namespace Docnet.Core.Editors
                             var page = fpdf_edit.FPDFPageNew(newWrapper.Instance, index, image.Width, image.Height);
                             var imageObj = fpdf_edit.FPDFPageObjNewImageObj(newWrapper.Instance);
 
-                            fpdf_custom_edit.FPDFImageObjLoadJpegFile(page, 1, imageObj,
-                                FileHandle.FromStream(stream, image.Bytes.Length));
+                            fpdf_custom_edit.FPDFImageObjLoadJpegFile(page, 1, imageObj, FileHandle.FromStream(stream, image.Bytes.Length));
                             fpdf_edit.FPDFImageObjSetMatrix(imageObj, image.Width, 0, 0, image.Height, 0, 0);
                             fpdf_edit.FPDFPageInsertObject(page, imageObj);
                             fpdf_edit.FPDFPageGenerateContent(page);
